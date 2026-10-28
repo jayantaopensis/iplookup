@@ -8,6 +8,17 @@ const { createRateLimiter } = require('./rateLimit');
 
 const CALLBACK_RE = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
 
+// Maps the TRUST_PROXY env text to an Express "trust proxy" value:
+// unset/"false"/"0" → off, "true" → any proxy, a number → that many hops,
+// anything else → an IP/subnet list such as "loopback, 10.0.0.0/8".
+function parseTrustProxy(raw) {
+  const value = String(raw ?? '').trim().toLowerCase();
+  if (value === '' || value === 'false' || value === '0') return false;
+  if (value === 'true') return true;
+  if (/^\d+$/.test(value)) return Number(value);
+  return String(raw).trim();
+}
+
 function clientIp(req) {
   return (req.ip || '').replace(/^::ffff:/, '');
 }
@@ -75,7 +86,7 @@ async function main() {
   const dbs = await openDatabases(dataDir);
   const app = createApp(dbs, {
     rateLimit: Number(process.env.RATE_LIMIT) || 0,
-    trustProxy: process.env.TRUST_PROXY || false,
+    trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
   });
   app.listen(port, () => console.log(`IP Tracker listening on http://localhost:${port}`));
 }
@@ -87,4 +98,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createApp, main };
+module.exports = { createApp, main, parseTrustProxy };

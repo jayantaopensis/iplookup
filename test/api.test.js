@@ -2,7 +2,7 @@
 
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { createApp } = require('../src/server');
+const { createApp, parseTrustProxy } = require('../src/server');
 const { parseFields } = require('../src/fields');
 const { classifyIp, utcOffsetSeconds } = require('../src/lookup');
 
@@ -86,6 +86,18 @@ test('JSONP wraps the body and rejects unsafe callbacks', async () => {
   assert.match(ok.headers.get('content-type'), /javascript/);
   assert.equal(await ok.text(), 'app.onGeo({"status":"success","country":"United States"});');
   assert.equal((await get('/json/8.8.8.8?callback=alert(1)')).status, 400);
+});
+
+test('TRUST_PROXY text maps to valid Express settings', () => {
+  assert.equal(parseTrustProxy(undefined), false);
+  assert.equal(parseTrustProxy('false'), false);
+  assert.equal(parseTrustProxy('0'), false);
+  assert.equal(parseTrustProxy('true'), true);
+  assert.equal(parseTrustProxy('1'), 1);
+  assert.equal(parseTrustProxy('loopback'), 'loopback');
+  for (const raw of ['false', 'true', '1', 'loopback, 10.0.0.0/8']) {
+    assert.doesNotThrow(() => createApp(fakeDbs, { trustProxy: parseTrustProxy(raw) }));
+  }
 });
 
 test('no rate limit by default', async () => {
