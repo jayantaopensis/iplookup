@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IP Tracker API</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2c3 3.5 3 16.5 0 20M12 2c-3 3.5-3 16.5 0 20" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        IP Tracker
+      </a>
+      <nav>
+        <a href="#try">Try it</a>
+        <a href="#endpoint">Endpoint</a>
+        <a href="#fields">Fields</a>
+        <a href="#examples">Examples</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Locate any IP address with one request</h1>
+      <p>A self-hosted geolocation API that returns country, city, coordinates, time zone and network owner as JSON. Lookups run against a local copy of MaxMind GeoLite2, so no query ever leaves your server.</p>
+    </section>
+
+    <section id="try" class="card">
+      <h2>Try it</h2>
+      <form id="tester" class="tester">
+        <label for="url" class="sr-only">Request URL</label>
+        <input id="url" spellcheck="false" autocomplete="off">
+        <button type="submit" class="btn primary">Send</button>
+      </form>
+      <div class="chips" id="langs" aria-label="Response language"></div>
+      <div class="output-head">
+        <span id="status" class="badge">idle</span>
+        <span id="timing" class="muted"></span>
+      </div>
+      <pre id="output" class="json" aria-live="polite">Press Send to look up an address.</pre>
+    </section>
+
+    <section id="endpoint" class="card">
+      <h2>Endpoint</h2>
+      <pre class="code">GET /json/{ip-or-hostname}?fields={fields}&amp;lang={lang}&amp;callback={fn}</pre>
+      <p>Leave the address out (<code>GET /json</code>) to look up the caller's own IP. Hostnames are resolved to their first address before lookup.</p>
+      <table class="params">
+        <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>fields</code></td><td>Which keys to return. Either a comma-separated list (<code>country,city,lat,lon</code>) or a single number: the sum of the field codes in the table below. Use the field picker to build one.</td></tr>
+          <tr><td><code>lang</code></td><td>Language for place names: <span id="lang-list"></span>. Defaults to <code>en</code>; names without a translation fall back to English.</td></tr>
+          <tr><td><code>callback</code></td><td>Wraps the response as JSONP: <code>fn({...});</code></td></tr>
+        </tbody>
+      </table>
+      <h3>Failures and limits</h3>
+      <p>Lookups that cannot be answered still return HTTP 200 with <code>"status": "fail"</code> and a <code>message</code>: <code>private range</code>, <code>reserved range</code> or <code>invalid query</code>.</p>
+      <p>There is no request limit by default. To cap usage, set <code>RATE_LIMIT</code> to a number of requests per minute per client IP; responses then carry <code>X-Rl</code> (requests left) and <code>X-Ttl</code> (seconds until the window resets), and going over returns HTTP 429.</p>
+    </section>
+
+    <section id="fields" class="card">
+      <div class="section-head">
+        <h2>Fields</h2>
+        <div class="field-tools">
+          <span class="muted">fields=</span><code id="fieldCode">0</code>
+          <button type="button" class="btn" id="applyFields">Use in request</button>
+          <button type="button" class="btn" id="toggleAll">Select all</button>
+        </div>
+      </div>
+      <p class="muted">Tick a row to include it. Defaults are pre-selected.</p>
+      <div class="table-scroll">
+        <table class="fields" id="fieldsTable">
+          <thead><tr><th></th><th>Name</th><th>Description</th><th>Example</th><th>Type</th><th>Code</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="examples" class="card">
+      <h2>Examples</h2>
+      <h3>Browser (fetch)</h3>
+      <pre class="code">const res = await fetch('/json/8.8.8.8?fields=country,city,lat,lon');
+const geo = await res.json();
+if (geo.status === 'success') console.log(geo.city, geo.country);</pre>
+      <h3>JSONP</h3>
+      <pre class="code">&lt;script&gt;function showGeo(geo) { console.log(geo.country); }&lt;/script&gt;
+&lt;script src="/json/1.1.1.1?callback=showGeo"&gt;&lt;/script&gt;</pre>
+      <h3>curl</h3>
+      <pre class="code">curl "http://localhost:3000/json/1.1.1.1?lang=de"</pre>
+    </section>
+
+    <footer class="foot muted">
+      Includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">maxmind.com</a>.
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

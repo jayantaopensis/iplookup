@@ -1,0 +1,23 @@
+{
+  "name": "ip-tracker",
+  "version": "1.0.0",
+  "description": "Self-hosted IP geolocation JSON API with an interactive docs page, backed by MaxMind GeoLite2.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "download-db": "node scripts/download-db.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "country-to-currency": "^2.0.0",
+    "express": "^4.21.2",
+    "ipaddr.js": "^2.2.0",
+    "maxmind": "^4.3.24",
+    "tar": "^7.4.3"
+  }
+}

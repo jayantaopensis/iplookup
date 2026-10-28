@@ -1,0 +1,17 @@
+services:
+  ip-tracker:
+    build: .
+    image: ip-tracker
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      # Set to 1 when a reverse proxy (nginx, Caddy, Traefik) sits in front,
+      # so lookups without an address use the visitor's IP, not the proxy's.
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+    volumes:
+      - geodata:/app/data
+
+volumes:
+  geodata:
