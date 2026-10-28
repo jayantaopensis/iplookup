@@ -4,7 +4,7 @@ services:
     image: ip-tracker
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     # Credentials and options (including TRUST_PROXY) come from .env.
     env_file: .env
     volumes:
